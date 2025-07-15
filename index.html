@@ -175,7 +175,10 @@
       "Dév. haltères": 2
     };
 
-    session.addEventListener("change", renderExos);
+    session.addEventListener("change", () => {
+  renderExos();
+  renderKanban();
+});
 
     function renderExos() {
       const selected = session.value;
@@ -215,24 +218,27 @@
     }
 
     function renderKanban() {
-      const kanban = document.getElementById("kanban");
-      kanban.innerHTML = "";
-      const history = JSON.parse(localStorage.getItem("muscu_history")) || [];
-      const columns = { A: [], B: [], C: [] };
-      history.forEach((s, i) => {
-        const exoHtml = s.exos.map(e => {
-          const sText = e.series.map((s, j) => `S${j + 1}: ${s.kg}kg x ${s.reps}r`).join("<br>");
-          return `<b>${e.nom}</b><br>${sText}<br><br>`;
-        }).join("");
+  const kanban = document.getElementById("kanban");
+  kanban.innerHTML = "";
+  const history = JSON.parse(localStorage.getItem("muscu_history")) || [];
+  const sessionType = session.value;
+  const columns = [];
 
-        columns[s.session].push(`<div class='card'><b>${s.date}</b><br>${exoHtml}<button onclick="deleteSession(${i})" class='btn'>🗑 Supprimer</button></div>`);
-      });
+  history.forEach((s, i) => {
+    if (s.session === sessionType) {
+      const exoHtml = s.exos.map(e => {
+        const sText = e.series.map((s, j) => `S${j + 1}: ${s.kg}kg x ${s.reps}r`).join("<br>");
+        return `<b>${e.nom}</b><br>${sText}<br><br>`;
+      }).join("");
 
-      const sessionType = session.value;
-      const col = document.createElement("div");
-      col.innerHTML = `<h3 style='text-align:center'>Upper ${sessionType}</h3>` + columns[sessionType].join("");
-      kanban.appendChild(col);
+      columns.push(`<div class='card'><b>${s.date}</b><br>${exoHtml}<button onclick="deleteSession(${i})" class='btn'>🗑 Supprimer</button></div>`);
     }
+  });
+
+  const col = document.createElement("div");
+  col.innerHTML = `<h3 style='text-align:center'>Upper ${sessionType}</h3>` + columns.join("");
+  kanban.appendChild(col);
+}
 
     function switchGraph() {
       const mode = document.getElementById("chart-mode").value;
@@ -271,29 +277,39 @@
     }
 
     function updateGraph() {
-      const selectedExo = document.getElementById("graph-select").value;
-      const ctx = document.getElementById("progressChart").getContext("2d");
-      const history = JSON.parse(localStorage.getItem("muscu_history")) || [];
-      const labels = [];
-      const volumes = [];
+  const selectedExo = document.getElementById("graph-select").value;
+  const ctx = document.getElementById("progressChart").getContext("2d");
+  const history = JSON.parse(localStorage.getItem("muscu_history")) || [];
+  const labels = [];
+  const moyennes = [];
 
-      history.forEach(entry => {
-        const exo = entry.exos.find(e => e.nom === selectedExo);
-        if (exo) {
-          const volume = exo.series.reduce((acc, s) => acc + (parseFloat(s.kg || 0) * parseFloat(s.reps || 0)), 0);
-          labels.push(entry.date);
-          volumes.push(volume);
+  history.forEach(entry => {
+    const exo = entry.exos.find(e => e.nom === selectedExo);
+    if (exo) {
+      let totalCharge = 0;
+      let totalSeries = 0;
+      exo.series.forEach(s => {
+        const kg = parseFloat(s.kg || 0);
+        if (!isNaN(kg)) {
+          totalCharge += kg;
+          totalSeries += 1;
         }
       });
+      if (totalSeries > 0) {
+        labels.push(entry.date);
+        moyennes.push((totalCharge / totalSeries).toFixed(2));
+      }
+    }
+  });
 
-      if (window.myChart) window.myChart.destroy();
-      window.myChart = new Chart(ctx, {
+  if (window.myChart) window.myChart.destroy();
+  window.myChart = new Chart(ctx, {
         type: 'line',
         data: {
           labels,
           datasets: [{
-            label: `Volume total - ${selectedExo}`,
-            data: volumes,
+            label: `Charge moyenne - ${selectedExo}`,
+            data: moyennes,
             borderWidth: 2,
             fill: false,
             tension: 0.3
