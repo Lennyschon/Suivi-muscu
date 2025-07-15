@@ -181,10 +181,21 @@
 });
 
     function renderExos() {
-      const selected = session.value;
-      const list = exercices[selected];
-      exosDiv.innerHTML = "";
-      list.forEach(exo => {
+  const selected = session.value;
+  const list = exercices[selected];
+  const history = JSON.parse(localStorage.getItem("muscu_history")) || [];
+
+  // Trouver la dernière séance de ce type
+  const lastSession = [...history].reverse().find(s => s.session === selected);
+  const lastValues = {};
+  if (lastSession) {
+    lastSession.exos.forEach(e => {
+      lastValues[e.nom] = e.series.map(s => ({ kg: s.kg, reps: s.reps }));
+    });
+  }
+
+  exosDiv.innerHTML = "";
+  list.forEach(exo => {
         const repsText = repsObjectif[exo] || "";
         const block = document.createElement("div");
         block.className = "exo-block";
@@ -197,9 +208,11 @@
         for (let i = 1; i <= series; i++) {
           const col = document.createElement("div");
           col.className = "serie-col";
-          col.innerHTML = `<strong>Série ${i}</strong>
-            <input type='number' id='${exo}-kg-${i}' placeholder='kg'>
-            <input type='number' id='${exo}-reps-${i}' placeholder='reps'>`;
+          const lastKg = (lastValues[exo] && lastValues[exo][i - 1] && lastValues[exo][i - 1].kg) ? `${lastValues[exo][i - 1].kg} kg` : "kg";
+const lastReps = (lastValues[exo] && lastValues[exo][i - 1] && lastValues[exo][i - 1].reps) ? `${lastValues[exo][i - 1].reps} reps` : "reps";
+col.innerHTML = `<strong>Série ${i}</strong>
+  <input type='number' id='${exo}-kg-${i}' placeholder='${lastKg}'>
+  <input type='number' id='${exo}-reps-${i}' placeholder='${lastReps}'>`;
           grid.appendChild(col);
         }
 
@@ -224,21 +237,23 @@
   const sessionType = session.value;
   const columns = [];
 
-  history.forEach((s, i) => {
-    if (s.session === sessionType) {
-      const exoHtml = s.exos.map(e => {
-        const sText = e.series.map((s, j) => `S${j + 1}: ${s.kg}kg x ${s.reps}r`).join("<br>");
-        return `<b>${e.nom}</b><br>${sText}<br><br>`;
-      }).join("");
+  // Filtrage uniquement des séances correspondant au type sélectionné
+  const filteredHistory = history.filter((s) => s.session === sessionType);
 
-      columns.push(`<div class='card'><b>${s.date}</b><br>${exoHtml}<button onclick="deleteSession(${i})" class='btn'>🗑 Supprimer</button></div>`);
-    }
+  filteredHistory.forEach((s, i) => {
+    const exoHtml = s.exos.map(e => {
+      const sText = e.series.map((s, j) => `S${j + 1}: ${s.kg}kg x ${s.reps}r`).join("<br>");
+      return `<b>${e.nom}</b><br>${sText}<br><br>`;
+    }).join("");
+
+    columns.push(`<div class='card'><b>${s.date}</b><br>${exoHtml}<button onclick="deleteSession(${i})" class='btn'>🗑 Supprimer</button></div>`);
   });
 
   const col = document.createElement("div");
   col.innerHTML = `<h3 style='text-align:center'>Upper ${sessionType}</h3>` + columns.join("");
   kanban.appendChild(col);
 }
+    }
 
     function switchGraph() {
       const mode = document.getElementById("chart-mode").value;
