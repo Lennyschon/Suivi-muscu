@@ -95,23 +95,17 @@
 <body>
   <div class="container">
     <h2 style="text-align:center">Suivi Muscu</h2>
-
     <label for="session">Choisir une séance :</label>
     <select id="session">
       <option value="A">Upper A</option>
       <option value="B">Upper B</option>
       <option value="C">Upper C</option>
     </select>
-
     <label for="date">Date :</label>
     <input type="date" id="date" />
-
     <div id="exos"></div>
     <button class="btn" onclick="saveData()">Valider la séance</button>
-
     <div class="kanban" id="kanban"></div>
-
-    <!-- Menu de sélection du graphique -->
     <div style="margin-top: 40px;">
       <label for="chart-mode">Afficher la progression :</label>
       <select id="chart-mode" onchange="switchGraph()">
@@ -119,9 +113,7 @@
         <option value="exo">Volume par exercice</option>
       </select>
     </div>
-
     <select id="graph-select" style="margin-top: 20px; display:none;" onchange="updateGraph()"></select>
-
     <canvas id="totalChart" width="400" height="200"></canvas>
     <canvas id="progressChart" width="400" height="200" style="display:none;"></canvas>
   </div>
@@ -137,97 +129,98 @@
       C: ["Dips / Chest press", "Tirage vertical (variante)", "Dév. haltères", "Écarté poulie", "Extension triceps barre", "Curl biceps assis", "Élévations latérales"]
     };
 
-    const repsObjectif = {
-      "Chest press": "8-10",
-      "Tirage vertical": "6-8",
-      "Développé haltères": "6-8",
-      "Tirage unilatéral poulie": "6-8",
-      "Curl biceps assis": "10",
-      "Extension triceps barre": "10",
-      "Élévations latérales": "échec",
-      "Développé militaire": "8",
-      "Écarté poulie": "8",
-      "Tirage horizontal poulie": "8",
-      "Tirage unilatéral": "8",
-      "Extension triceps corde (haut)": "10",
-      "Curl marteau poulie": "10",
-      "Dips / Chest press": "8",
-      "Tirage vertical (variante)": "6-8",
-      "Dév. haltères": "6-8"
-    };
+    const repsObjectif = {"Chest press":"8-10","Tirage vertical":"6-8","Développé haltères":"6-8","Tirage unilatéral poulie":"6-8","Curl biceps assis":"10","Extension triceps barre":"10","Développé militaire":"8","Tirage horizontal poulie":"8","Tirage unilatéral":"8","Extension triceps corde (haut)":"10","Curl marteau poulie":"10","Dips / Chest press":"8","Tirage vertical (variante)":"6-8","Dév. haltères":"6-8","Écarté poulie":"8","Élévations latérales":"échec"};
 
-    const nbSeriesByExercise = {
-      "Chest press": 2,
-      "Tirage vertical": 3,
-      "Développé haltères": 2,
-      "Tirage unilatéral poulie": 2,
-      "Curl biceps assis": 3,
-      "Extension triceps barre": 3,
-      "Élévations latérales": 3,
-      "Développé militaire": 2,
-      "Écarté poulie": 2,
-      "Tirage horizontal poulie": 2,
-      "Tirage unilatéral": 2,
-      "Extension triceps corde (haut)": 2,
-      "Curl marteau poulie": 3,
-      "Dips / Chest press": 2,
-      "Tirage vertical (variante)": 2,
-      "Dév. haltères": 2
-    };
+    const nbSeriesByExercise = {"Chest press":2,"Tirage vertical":3,"Développé haltères":2,"Tirage unilatéral poulie":2,"Curl biceps assis":3,"Extension triceps barre":3,"Développé militaire":2,"Tirage horizontal poulie":2,"Tirage unilatéral":2,"Extension triceps corde (haut)":2,"Curl marteau poulie":3,"Dips / Chest press":2,"Tirage vertical (variante)":2,"Dév. haltères":2,"Écarté poulie":2,"Élévations latérales":3};
 
     session.addEventListener("change", () => {
-  renderExos();
-  renderKanban();
-});
+      renderExos();
+      renderKanban();
+    });
 
     function renderExos() {
-  const selected = session.value;
-  const list = exercices[selected];
-  const history = JSON.parse(localStorage.getItem("muscu_history")) || [];
-
-  // Trouver la dernière séance de ce type
-  const lastSession = [...history].reverse().find(s => s.session === selected);
-  const lastValues = {};
-  if (lastSession) {
-    lastSession.exos.forEach(e => {
-      lastValues[e.nom] = e.series.map(s => ({ kg: s.kg, reps: s.reps }));
-    });
-  }
-
-  exosDiv.innerHTML = "";
-  list.forEach(exo => {
+      const selected = session.value;
+      const list = exercices[selected];
+      const history = JSON.parse(localStorage.getItem("muscu_history")) || [];
+      const lastSession = [...history].reverse().find(s => s.session === selected);
+      const lastValues = {};
+      if (lastSession) {
+        lastSession.exos.forEach(e => {
+          lastValues[e.nom] = e.series.map(s => ({ kg: s.kg, reps: s.reps }));
+        });
+      }
+      exosDiv.innerHTML = "";
+      list.forEach(exo => {
         const repsText = repsObjectif[exo] || "";
         const block = document.createElement("div");
         block.className = "exo-block";
         block.innerHTML = `<label>${exo} <span style='font-weight:normal;font-size:12px;'>(Objectif: ${repsText} reps)</span></label>`;
-
         const grid = document.createElement("div");
         grid.className = "exo-grid";
-
         const series = nbSeriesByExercise[exo] || 3;
         for (let i = 1; i <= series; i++) {
           const col = document.createElement("div");
           col.className = "serie-col";
           const lastKg = (lastValues[exo] && lastValues[exo][i - 1] && lastValues[exo][i - 1].kg) ? `${lastValues[exo][i - 1].kg} kg` : "kg";
-const lastReps = (lastValues[exo] && lastValues[exo][i - 1] && lastValues[exo][i - 1].reps) ? `${lastValues[exo][i - 1].reps} reps` : "reps";
-col.innerHTML = `<strong>Série ${i}</strong>
-  <input type='number' id='${exo}-kg-${i}' placeholder='${lastKg}'>
-  <input type='number' id='${exo}-reps-${i}' placeholder='${lastReps}'>`;
+          const lastReps = (lastValues[exo] && lastValues[exo][i - 1] && lastValues[exo][i - 1].reps) ? `${lastValues[exo][i - 1].reps} reps` : "reps";
+          col.innerHTML = `<strong>Série ${i}</strong><input type='number' id='${exo}-kg-${i}' placeholder='${lastKg}'><input type='number' id='${exo}-reps-${i}' placeholder='${lastReps}'>`;
           grid.appendChild(col);
         }
-
         block.appendChild(grid);
         exosDiv.appendChild(block);
       });
+      restoreDraft();
+      autoSaveInputs();
     }
 
-    function deleteSession(index) {
+    function autoSaveInputs() {
+      const inputs = document.querySelectorAll('input[type="number"]');
+      const draft = JSON.parse(localStorage.getItem("muscu_draft") || "{}");
+      inputs.forEach(input => {
+        if (draft[input.id]) input.value = draft[input.id];
+        input.addEventListener("input", () => {
+          draft[input.id] = input.value;
+          localStorage.setItem("muscu_draft", JSON.stringify(draft));
+        });
+      });
+    }
+
+    function restoreDraft() {
+      const draft = JSON.parse(localStorage.getItem("muscu_draft") || "{}");
+      Object.keys(draft).forEach(id => {
+        const input = document.getElementById(id);
+        if (input) input.value = draft[id];
+      });
+    }
+
+    function clearDraft() {
+      localStorage.removeItem("muscu_draft");
+    }
+
+    function saveData() {
+      const sessionType = session.value;
+      const date = dateInput.value;
+      if (!date) return alert("Veuillez sélectionner une date.");
+      const list = exercices[sessionType];
+      const result = { date, session: sessionType, exos: [] };
+      list.forEach(exo => {
+        const seriesCount = nbSeriesByExercise[exo] || 3;
+        const series = [];
+        for (let i = 1; i <= seriesCount; i++) {
+          const kg = document.getElementById(`${exo}-kg-${i}`).value;
+          const reps = document.getElementById(`${exo}-reps-${i}`).value;
+          series.push({ kg, reps });
+        }
+        result.exos.push({ nom: exo, series });
+      });
       let history = JSON.parse(localStorage.getItem("muscu_history")) || [];
-      history.splice(index, 1);
+      history.push(result);
       localStorage.setItem("muscu_history", JSON.stringify(history));
       renderKanban();
-      updateGraphOptions();
       renderTotalVolumeGraph();
+      updateGraphOptions();
+      switchGraph();
+      clearDraft();
     }
 
     function renderKanban() {
@@ -416,6 +409,7 @@ col.innerHTML = `<strong>Série ${i}</strong>
     renderExos();
     renderKanban();
     switchGraph();
+
   </script>
 </body>
 </html>
