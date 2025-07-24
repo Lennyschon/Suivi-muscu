@@ -125,13 +125,13 @@
 
     const exercices = {
       A: ["Chest press", "Tirage vertical", "Développé haltères", "Tirage unilatéral poulie", "Curl biceps assis", "Extension triceps barre", "Élévations latérales"],
-      B: ["Développé militaire", "Écarté poulie", "Tirage horizontal poulie", "Tirage unilatéral", "Extension triceps corde (haut)", "Curl marteau poulie", "Arrière d'épaules"],
-      C: ["Dips / Chest press", "Tirage vertical (variante)", "Dév. haltères", "Écarté poulie", "Extension triceps corde (bas)", "Curl biceps assis", "Élévations latérales"]
+      B: ["Développé militaire", "Écarté poulie", "Tirage horizontal poulie", "Tirage unilatéral", "Extension triceps corde (haut)", "Curl marteau poulie", "Élévations latérales"],
+      C: ["Dips / Chest press", "Tirage vertical (variante)", "Dév. haltères", "Écarté poulie", "Extension triceps barre", "Curl biceps assis", "Élévations latérales"]
     };
 
-    const repsObjectif = {"Chest press":"8-10","Tirage vertical":"6-8","Développé haltères":"6-8","Tirage unilatéral poulie":"6-8","Curl biceps assis":"10","Extension triceps barre":"10","Développé militaire":"8","Tirage horizontal poulie":"8","Tirage unilatéral":"8","Extension triceps corde (haut)":"10","Curl marteau poulie":"10","Dips / Chest press":"8","Tirage vertical (variante)":"6-8","Dév. haltères":"6-8","Écarté poulie":"8","Élévations latérales":"échec","Arrière d’épaules": "8"};
+    const repsObjectif = {"Chest press":"8-10","Tirage vertical":"6-8","Développé haltères":"6-8","Tirage unilatéral poulie":"6-8","Curl biceps assis":"10","Extension triceps barre":"10","Développé militaire":"8","Tirage horizontal poulie":"8","Tirage unilatéral":"8","Extension triceps corde (haut)":"10","Curl marteau poulie":"10","Dips / Chest press":"8","Tirage vertical (variante)":"6-8","Dév. haltères":"6-8","Écarté poulie":"8","Élévations latérales":"échec"};
 
-    const nbSeriesByExercise = {"Chest press":2,"Tirage vertical":3,"Développé haltères":2,"Tirage unilatéral poulie":2,"Curl biceps assis":3,"Extension triceps barre":3,"Développé militaire":2,"Tirage horizontal poulie":2,"Tirage unilatéral":2,"Extension triceps corde (haut)":2,"Curl marteau poulie":3,"Dips / Chest press":2,"Tirage vertical (variante)":2,"Dév. haltères":2,"Écarté poulie":2,"Élévations latérales":3,"Arrière d’épaules": 3}
+    const nbSeriesByExercise = {"Chest press":2,"Tirage vertical":3,"Développé haltères":2,"Tirage unilatéral poulie":2,"Curl biceps assis":3,"Extension triceps barre":3,"Développé militaire":2,"Tirage horizontal poulie":2,"Tirage unilatéral":2,"Extension triceps corde (haut)":2,"Curl marteau poulie":3,"Dips / Chest press":2,"Tirage vertical (variante)":2,"Dév. haltères":2,"Écarté poulie":2,"Élévations latérales":3};
 
     session.addEventListener("change", () => {
       renderExos();
